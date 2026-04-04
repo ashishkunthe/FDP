@@ -5,7 +5,7 @@ const backendAPI = import.meta.env.VITE_BACKEND_URL;
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
-  const [role, setRole] = useState("VIEWER");
+  const [role, setRole] = useState(null);
 
   useEffect(() => {
     const fetchSummary = async () => {
@@ -62,7 +62,10 @@ export default function Dashboard() {
 
         {/* ANALYST */}
         {role === "ANALYST" && (
-          <button className="bg-blue-600 text-white px-4 py-2 rounded w-48 hover:bg-blue-700">
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded w-48 hover:bg-blue-700"
+            onClick={() => (window.location.href = "/records")}
+          >
             View Records
           </button>
         )}
