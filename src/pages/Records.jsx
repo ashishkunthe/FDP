@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { FiFilter } from "react-icons/fi";
 
 const backendAPI = import.meta.env.VITE_BACKEND_URL;
 
 function Records() {
   const [records, setRecords] = useState([]);
   const [error, setError] = useState("");
+  const [filter, setFilter] = useState("ALL");
 
   useEffect(() => {
     const fetchRecords = async () => {
@@ -25,34 +27,76 @@ function Records() {
     fetchRecords();
   }, []);
 
+  const filteredRecords =
+    filter === "ALL" ? records : records.filter((r) => r.type === filter);
+
   return (
-    <div className="min-h-screen bg-white p-6">
-      <h1 className="text-2xl font-bold text-center mb-6">Records</h1>
+    <div className="min-h-screen bg-linear-to-b from-white to-gray-100 p-6">
+      {/* HEADER */}
+      <div className="max-w-6xl mx-auto mb-8 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <h1 className="text-3xl font-bold text-gray-800">Financial Records</h1>
 
-      {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+        {/* FILTER */}
+        <div className="flex items-center gap-2">
+          <FiFilter className="text-gray-500" />
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="ALL">All</option>
+            <option value="INCOME">Income</option>
+            <option value="EXPENSE">Expense</option>
+          </select>
+        </div>
+      </div>
 
-      {records.length === 0 && !error && (
-        <p className="text-center text-gray-500">No records found</p>
+      {/* ERROR */}
+      {error && <p className="text-red-500 text-center mb-6">{error}</p>}
+
+      {/* EMPTY */}
+      {filteredRecords.length === 0 && !error && (
+        <p className="text-center text-gray-500 mt-10">No records found</p>
       )}
 
-      <div className="max-w-xl mx-auto space-y-4">
-        {records.map((record) => (
-          <div key={record._id} className="border rounded-lg p-4 shadow-sm">
-            <p>
-              <strong>Amount:</strong> {record.amount}
+      {/* RECORD GRID */}
+      <div className="max-w-6xl mx-auto grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredRecords.map((record) => (
+          <div
+            key={record._id}
+            className="bg-white border rounded-xl p-5 shadow-sm hover:shadow-lg transition-all duration-200"
+          >
+            {/* TOP */}
+            <div className="flex justify-between items-center">
+              <h2 className="font-semibold text-gray-700">
+                {record.category || "General"}
+              </h2>
+
+              <span
+                className={`text-xs px-2 py-1 rounded-full ${
+                  record.type === "INCOME"
+                    ? "bg-green-100 text-green-600"
+                    : "bg-red-100 text-red-500"
+                }`}
+              >
+                {record.type}
+              </span>
+            </div>
+
+            {/* AMOUNT */}
+            <p className="text-2xl font-bold mt-3 text-gray-900">
+              ₹{record.amount}
             </p>
-            <p>
-              <strong>Type:</strong> {record.type}
+
+            {/* DATE */}
+            <p className="text-sm text-gray-500 mt-1">
+              {new Date(record.date).toLocaleDateString()}
             </p>
-            <p>
-              <strong>Category:</strong> {record.category}
-            </p>
-            <p>
-              <strong>Date:</strong> {record.date}
-            </p>
+
+            {/* NOTES */}
             {record.notes && (
-              <p>
-                <strong>Notes:</strong> {record.notes}
+              <p className="text-sm text-gray-600 mt-3 line-clamp-2">
+                {record.notes}
               </p>
             )}
           </div>

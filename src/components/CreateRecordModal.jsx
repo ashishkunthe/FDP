@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { FiDollarSign, FiTag, FiCalendar, FiFileText } from "react-icons/fi";
 
 const backendAPI = import.meta.env.VITE_BACKEND_URL;
 
@@ -12,7 +13,9 @@ export default function CreateRecordModal({ onClose, existingData }) {
     notes: "",
   });
 
-  // 🔥 PREFILL LOGIC
+  const [loading, setLoading] = useState(false);
+
+  // PREFILL
   useEffect(() => {
     if (existingData) {
       setForm({
@@ -27,86 +30,141 @@ export default function CreateRecordModal({ onClose, existingData }) {
 
   const handleSubmit = async () => {
     try {
+      setLoading(true);
+
       if (existingData) {
-        // 🔁 UPDATE
         await axios.patch(`${backendAPI}/records/${existingData._id}`, form, {
           headers: {
             Authorization: `${localStorage.getItem("token")}`,
           },
         });
-
-        alert("Record updated");
       } else {
-        // ➕ CREATE
         await axios.post(`${backendAPI}/records`, form, {
           headers: {
             Authorization: `${localStorage.getItem("token")}`,
           },
         });
-
-        alert("Record created");
       }
 
       onClose();
     } catch (err) {
       alert(err.response?.data?.message || "Error");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-      <div className="bg-white p-6 rounded w-87.5">
-        <h2 className="text-xl font-semibold mb-4">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+      {/* MODAL */}
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl p-6">
+        {/* HEADER */}
+        <h2 className="text-xl font-semibold text-gray-800">
           {existingData ? "Update Record" : "Create Record"}
         </h2>
+        <p className="text-sm text-gray-500 mt-1">
+          {existingData
+            ? "Modify your financial entry"
+            : "Add a new financial record"}
+        </p>
 
-        <input
-          placeholder="Amount"
-          value={form.amount}
-          className="w-full mb-2 p-2 border rounded"
-          onChange={(e) => setForm({ ...form, amount: Number(e.target.value) })}
-        />
+        {/* FORM */}
+        <div className="mt-6 space-y-4">
+          {/* AMOUNT */}
+          <div>
+            <label className="text-sm text-gray-600">Amount</label>
+            <div className="flex items-center border rounded-lg px-3 py-2 mt-1 focus-within:ring-2 focus-within:ring-blue-500">
+              <FiDollarSign className="text-gray-400 mr-2" />
+              <input
+                type="number"
+                value={form.amount}
+                placeholder="Enter amount"
+                className="w-full outline-none text-sm"
+                onChange={(e) =>
+                  setForm({ ...form, amount: Number(e.target.value) })
+                }
+              />
+            </div>
+          </div>
 
-        <select
-          value={form.type}
-          className="w-full mb-2 p-2 border rounded"
-          onChange={(e) => setForm({ ...form, type: e.target.value })}
-        >
-          <option value="INCOME">INCOME</option>
-          <option value="EXPENSE">EXPENSE</option>
-        </select>
+          {/* TYPE */}
+          <div>
+            <label className="text-sm text-gray-600">Type</label>
+            <select
+              value={form.type}
+              className="w-full border rounded-lg px-3 py-2 mt-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => setForm({ ...form, type: e.target.value })}
+            >
+              <option value="INCOME">Income</option>
+              <option value="EXPENSE">Expense</option>
+            </select>
+          </div>
 
-        <input
-          placeholder="Category"
-          value={form.category}
-          className="w-full mb-2 p-2 border rounded"
-          onChange={(e) => setForm({ ...form, category: e.target.value })}
-        />
+          {/* CATEGORY */}
+          <div>
+            <label className="text-sm text-gray-600">Category</label>
+            <div className="flex items-center border rounded-lg px-3 py-2 mt-1 focus-within:ring-2 focus-within:ring-blue-500">
+              <FiTag className="text-gray-400 mr-2" />
+              <input
+                value={form.category}
+                placeholder="e.g. Salary, Food"
+                className="w-full outline-none text-sm"
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
+              />
+            </div>
+          </div>
 
-        <input
-          type="date"
-          value={form.date}
-          className="w-full mb-2 p-2 border rounded"
-          onChange={(e) => setForm({ ...form, date: e.target.value })}
-        />
+          {/* DATE */}
+          <div>
+            <label className="text-sm text-gray-600">Date</label>
+            <div className="flex items-center border rounded-lg px-3 py-2 mt-1">
+              <FiCalendar className="text-gray-400 mr-2" />
+              <input
+                type="date"
+                value={form.date}
+                className="w-full outline-none text-sm"
+                onChange={(e) => setForm({ ...form, date: e.target.value })}
+              />
+            </div>
+          </div>
 
-        <input
-          placeholder="Notes"
-          value={form.notes}
-          className="w-full mb-4 p-2 border rounded"
-          onChange={(e) => setForm({ ...form, notes: e.target.value })}
-        />
+          {/* NOTES */}
+          <div>
+            <label className="text-sm text-gray-600">Notes</label>
+            <div className="flex items-start border rounded-lg px-3 py-2 mt-1">
+              <FiFileText className="text-gray-400 mr-2 mt-1" />
+              <textarea
+                value={form.notes}
+                placeholder="Optional notes..."
+                className="w-full outline-none text-sm resize-none"
+                rows={2}
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              />
+            </div>
+          </div>
+        </div>
 
-        <div className="flex justify-between">
-          <button onClick={onClose} className="border px-3 py-1 rounded">
+        {/* ACTIONS */}
+        <div className="flex justify-end gap-3 mt-6">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 rounded-lg border text-gray-600 hover:bg-gray-100 transition"
+          >
             Cancel
           </button>
 
           <button
             onClick={handleSubmit}
-            className="bg-blue-600 text-white px-3 py-1 rounded"
+            disabled={loading}
+            className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-50"
           >
-            {existingData ? "Update" : "Create"}
+            {loading
+              ? existingData
+                ? "Updating..."
+                : "Creating..."
+              : existingData
+              ? "Update"
+              : "Create"}
           </button>
         </div>
       </div>

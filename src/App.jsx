@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import Records from "./pages/Records";
 import Admin from "./pages/Admin";
 import ProtectedRoute from "./components/ProtectedRoutes";
+import Landing from "./pages/Landing";
 
 function App() {
   return (
@@ -13,10 +14,11 @@ function App() {
         {/* Public */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/" element={<Landing />} />
 
         {/* Protected */}
         <Route
-          path="/"
+          path="/dashboard"
           element={
             <ProtectedRoute>
               <Dashboard />
